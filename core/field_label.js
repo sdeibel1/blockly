@@ -76,7 +76,8 @@ Blockly.FieldLabel.prototype.init = function() {
   }
   // Build the DOM.
   this.textElement_ = Blockly.utils.createSvgElement('text',
-      {'class': 'blocklyText', 'y': this.size_.height - 5}, null);
+      {'class': 'blocklyText', 'aria-hidden': true, 'y': this.size_.height - 5},
+      null);
   if (this.class_) {
     Blockly.utils.addClass(this.textElement_, this.class_);
   }
