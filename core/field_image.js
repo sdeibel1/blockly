@@ -98,7 +98,8 @@ Blockly.FieldImage.prototype.init = function() {
   }
   // Build the DOM.
   /** @type {SVGElement} */
-  this.fieldGroup_ = Blockly.utils.createSvgElement('g', {}, null);
+  this.fieldGroup_ = Blockly.utils.createSvgElement('g', {'aria-hidden':true},
+      null);
   if (!this.visible_) {
     this.fieldGroup_.style.display = 'none';
   }
