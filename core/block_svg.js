@@ -74,10 +74,8 @@ Blockly.BlockSvg = function(workspace, prototypeName, opt_id) {
    * @private
    */
   this.svgPath_ = Blockly.utils.createSvgElement('path',
-    {'class': 'blocklyPath',
-     "aria-label": prototypeName.replace(/_/g, ' ')
-    },
-    this.svgGroup_);
+      {'class': 'blocklyPath', 'aria-label': prototypeName.replace(/_/g, ' ')},
+      this.svgGroup_);
 
   /**
    * @type {SVGElement}
