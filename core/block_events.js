@@ -105,9 +105,11 @@ Blockly.Events.BlockBase.prototype.grabText = function(block) {
 Blockly.Events.BlockBase.prototype.updateLabel = function(block) {
   var lab = this.grabText(block);
   // TODO: don't use privately marked variable
-  block.svgPath_.setAttribute('aria-label', lab);
-  if (block.getParent()) {
-    this.updateLabel(block.getParent());
+  if (block.svgPath_) {
+    block.svgPath_.setAttribute('aria-label', lab);
+    if (block.getParent()) {
+      this.updateLabel(block.getParent());
+    }
   }
 }
 
