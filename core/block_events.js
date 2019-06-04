@@ -130,6 +130,11 @@ Blockly.Events.Change = function(block, element, name, oldValue, newValue) {
   this.name = name;
   this.oldValue = oldValue;
   this.newValue = newValue;
+  if (this.element === 'field') {
+    Blockly.Events.disable();
+    block.setFieldValue(this.newValue, this.name);
+    Blockly.Events.enable();
+  }
   this.updateLabel(block);
 };
 goog.inherits(Blockly.Events.Change, Blockly.Events.BlockBase);
