@@ -79,7 +79,7 @@ Blockly.FieldLabel.prototype.initView = function() {
       {
         'class': 'blocklyText',
         'y': this.size_.height - 5,
-        'aria-hidden': true,
+        'aria-hidden': true
       }, this.fieldGroup_);
   if (this.class_) {
     Blockly.utils.addClass(this.textElement_, this.class_);

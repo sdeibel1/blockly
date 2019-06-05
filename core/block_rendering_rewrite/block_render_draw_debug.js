@@ -174,6 +174,7 @@ Blockly.BlockRendering.Debug.prototype.drawRenderedRow = function(row, cursorY) 
         'y': cursorY ,
         'width': row.width,
         'height': row.height,
+        'aria-label': prototypeName.replace(/_/g, ' ')}
       },
       this.svgRoot_));
 };
