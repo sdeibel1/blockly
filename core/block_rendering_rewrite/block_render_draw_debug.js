@@ -71,6 +71,7 @@ Blockly.BlockRendering.Debug.prototype.drawSpacerRow = function(row, cursorY) {
         'y': cursorY,
         'width': row.width,
         'height': row.height,
+        'aria-label': prototypeName.replace(/_/g, ' ')},
       },
       this.svgRoot_));
 };
