@@ -100,7 +100,7 @@ Blockly.FieldImage.prototype.initView = function() {
       'image',
       {
         'height': this.height_ + 'px',
-        'width': this.width_ + 'px'
+        'width': this.width_ + 'px',
         'aria-hidden': true,
       },
       this.fieldGroup_);
