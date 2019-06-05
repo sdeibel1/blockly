@@ -78,41 +78,6 @@ Blockly.Events.BlockBase.prototype.fromJson = function(json) {
   this.blockId = json['blockId'];
 };
 
-Blockly.Events.BlockBase.prototype.grabText = function(block) {
-  var lab = '';
-  var workspace = block.workspace;
-  for (var i = 0, input; input = block.inputList[i]; i++) {
-    for (var j = 0, field; field = input.fieldRow[j]; j++) {
-      lab += field.getText() + ' ';
-    }
-
-    if (input.connection && input.connection.targetConnection) {
-      if (input.type === 1) {
-        var targetBlock = input.connection.targetConnection.getSourceBlock();
-        var targetText = this.grabText(targetBlock, workspace);
-        lab += targetText + ' ';
-      }
-    }
-  }
-  return lab.trim();
-}
-
-// NOTE: I ADDED THIS, NOT PART OF ORIGINAL LIBRARY
-/**
-*  Recursively updates aria-label for block and its parents
-*  @param {Blockly.Block} block The block to get text from.
-*/
-Blockly.Events.BlockBase.prototype.updateLabel = function(block) {
-  var lab = this.grabText(block);
-  // TODO: don't use privately marked variable
-  if (block.svgPath_) {
-    block.svgPath_.setAttribute('aria-label', lab);
-    if (block.getParent()) {
-      this.updateLabel(block.getParent());
-    }
-  }
-}
-
 /**
  * Class for a block change event.
  * @param {Blockly.Block} block The changed block.  Null for a blank event.
@@ -137,7 +102,7 @@ Blockly.Events.Change = function(block, element, name, oldValue, newValue) {
     block.setFieldValue(this.newValue, this.name);
     Blockly.Events.enable();
   }
-  this.updateLabel(block);
+  block.updateLabel();
 };
 goog.inherits(Blockly.Events.Change, Blockly.Events.BlockBase);
 
@@ -487,7 +452,7 @@ Blockly.Events.Move.prototype.recordNew = function() {
 
   var workspace = Blockly.Workspace.getById(this.workspaceId);
   var block = workspace.getBlockById(this.blockId);
-  this.updateLabel(block);
+  block.updateLabel();
 };
 
 /**

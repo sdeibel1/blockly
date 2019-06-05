@@ -7,6 +7,18 @@
   <script src="../../blocks_compressed.js"></script>
   <script src="../../javascript_compressed.js"></script>
   <script src="../../msg/js/en.js"></script>
+  <script>
+  function getAllNodes() {
+      var ws = Blockly.getMainWorkspace();
+      var curNode = Blockly.ASTNode.createWorkspaceNode(ws, new goog.math.Coordinate(100,100));
+      var nodes = [];
+      do {
+        nodes.push(curNode);
+        curNode = treeTraversal(curNode);
+      } while (curNode);
+      return nodes;
+    }
+  </script>
   <style>
     body {
       background-color: #fff;
