@@ -76,6 +76,25 @@ Blockly.BlockRendering.Debug.prototype.drawSpacerRow = function(row, cursorY) {
 };
 
 /**
+ * Draw a debug rectangle for the bottom spacer row.
+ * @param {!Blockly.BlockRendering.Row} row The row to render
+ * @param {number} cursorY The y position of the top of the row.
+ * @package
+ */
+Blockly.BlockRendering.Debug.prototype.drawBottomRow = function(row, cursorY) {
+  this.debugElements_.push(Blockly.utils.createSvgElement('rect',
+      {
+        'class': 'rowSpacerRect blockRenderDebug',
+        'x': 0,
+        'y': cursorY,
+        'width': row.width,
+        'height': row.height,
+        'aria-label': 'End of block.',
+      },
+      this.svgRoot_));
+};
+
+/**
  * Draw a debug rectangle for a horizontal spacer.
  * @param {!Blockly.BlockSvg.InRowSpacer} elem The spacer to render
  * @param {number} cursorX The x position of the left of the row.
@@ -163,9 +182,10 @@ Blockly.BlockRendering.Debug.prototype.drawConnection = function(conn) {
  * Draw a debug rectangle for a non-empty row.
  * @param {!Blockly.BlockSvg.Row} row The non-empty row to render.
  * @param {number} cursorY The y position of the top of the row.
+ * @param {?string} type The type of the block.
  * @package
  */
-Blockly.BlockRendering.Debug.prototype.drawRenderedRow = function(row, cursorY) {
+Blockly.BlockRendering.Debug.prototype.drawRenderedRow = function(row, cursorY, type) {
   this.debugElements_.push(Blockly.utils.createSvgElement('rect',
       {
         'class': 'elemRenderingRect blockRenderDebug',
@@ -173,6 +193,7 @@ Blockly.BlockRendering.Debug.prototype.drawRenderedRow = function(row, cursorY) 
         'y': cursorY ,
         'width': row.width,
         'height': row.height,
+        'aria-label': type.replace(/_/g, ' '),
       },
       this.svgRoot_));
 };
@@ -181,9 +202,10 @@ Blockly.BlockRendering.Debug.prototype.drawRenderedRow = function(row, cursorY) 
  * Draw debug rectangles for a non-empty row and all of its subcomponents.
  * @param {!Blockly.BlockSvg.Row} row The non-empty row to render.
  * @param {number} cursorY The y position of the top of the row.
+ * @param {?string} type The type of the block.
  * @package
  */
-Blockly.BlockRendering.Debug.prototype.drawRowWithElements = function(row, cursorY) {
+Blockly.BlockRendering.Debug.prototype.drawRowWithElements = function(row, cursorY, type) {
   var centerY = cursorY + row.height / 2;
   var cursorX = 0;
   for (var e = 0; e < row.elements.length; e++) {
@@ -195,7 +217,7 @@ Blockly.BlockRendering.Debug.prototype.drawRowWithElements = function(row, curso
     }
     cursorX += elem.width;
   }
-  this.drawRenderedRow(row, cursorY);
+  this.drawRenderedRow(row, cursorY, type);
 };
 
 /**
@@ -212,9 +234,13 @@ Blockly.BlockRendering.Debug.prototype.drawDebug = function(block, info) {
   for (var r = 0; r < info.rows.length; r++) {
     var row = info.rows[r];
     if (row.isSpacer()) {
-      this.drawSpacerRow(row, cursorY);
+      if (row == info.bottomRow && row.followsStatement){
+        this.drawBottomRow(row, cursorY);
+      } else {
+        this.drawSpacerRow(row, cursorY);
+      }
     } else {
-      this.drawRowWithElements(row, cursorY);
+      this.drawRowWithElements(row, cursorY, block.type);
     }
     cursorY += row.height;
   }

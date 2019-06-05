@@ -450,13 +450,13 @@ Blockly.BlockRendering.BottomRow = function(block) {
   this.hasNextConnection = !!block.nextConnection;
   this.connection = block.nextConnection;
 
-  var followsStatement =
+  this.followsStatement =
       block.inputList.length &&
       block.inputList[block.inputList.length - 1].type == Blockly.NEXT_STATEMENT;
 
   // This is the minimum height for the row. If one of it's elements has a greater
   // height it will be overwritten in the compute pass.
-  if (followsStatement) {
+  if (this.followsStatement) {
     this.height = BRC.LARGE_PADDING;
   } else {
     this.height = BRC.NOTCH_HEIGHT;
