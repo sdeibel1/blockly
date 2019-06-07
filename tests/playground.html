@@ -66,8 +66,16 @@
 <script src="../blocks/procedures.js"></script>
 <script src="blocks/test_blocks.js"></script>
 
+<script src="../core/block_rendering_rewrite/measurables.js"></script>
+<script src="../core/block_rendering_rewrite/block_render_info.js"></script>
+<script src="../core/block_rendering_rewrite/block_render_draw.js"></script>
+<script src="../core/block_rendering_rewrite/block_render_draw_debug.js"></script>
+<script src="../core/block_rendering_rewrite/block_rendering_constants.js"></script>
+<script src="../core/block_rendering_rewrite/block_render_draw_highlight.js"></script>
+
 <script>
 'use strict';
+goog.require('Blockly.BlockRendering.RenderInfo');
 var workspace = null;
 
 function start() {
@@ -97,8 +105,8 @@ function start() {
         disable: true,
         grid:
           {
-            spacing: 25,
-            length: 3,
+            spacing: 5,
+            length: 1,
             colour: '#ccc',
             snap: true
           },
@@ -136,11 +144,17 @@ function start() {
     // Restore event logging state.
     var state = sessionStorage.getItem('logEvents');
     logEvents(Boolean(Number(state)));
+
+    // Restore render debug state.
+    var renderDebugState = sessionStorage.getItem('blockRenderDebug');
+    toggleRenderingDebug(Boolean(Number(renderDebugState)));
   } else {
     // MSIE 11 does not support sessionStorage on file:// URLs.
     logEvents(false);
   }
   taChange();
+
+  fromXml();
 }
 
 function addToolboxButtonCallbacks() {
@@ -156,9 +170,36 @@ function addToolboxButtonCallbacks() {
       block.setFieldValue(text, 'LABEL');
     }
   };
+  var setRandomStyle = function(button) {
+    var blocks = button.workspace_.getAllBlocks();
+    var styles = Object.keys(Blockly.getTheme().getAllBlockStyles());
+    styles.splice(styles.indexOf(blocks[0].getStyleName()), 1);
+    var style = styles[Math.floor(Math.random() * styles.length)];
+    for(var i = 0, block; block = blocks[i]; i++) {
+      block.setStyle(style);
+    }
+  };
+  var toggleEnabled = function(button) {
+    var blocks = button.workspace_.getAllBlocks();
+    for(var i = 0, block; block = blocks[i]; i++) {
+      block.setEnabled(!block.isEnabled());
+    }
+  };
+  var toggleShadow = function(button) {
+    var blocks = button.workspace_.getAllBlocks();
+    for(var i = 0, block; block = blocks[i]; i++) {
+      block.setShadow(!block.isShadow());
+    }
+  };
 
   workspace.registerButtonCallback(
-    'randomizeLabelText', randomizeLabelText);
+      'setRandomStyle', setRandomStyle);
+  workspace.registerButtonCallback(
+      'toggleEnabled', toggleEnabled);
+  workspace.registerButtonCallback(
+      'toggleShadow', toggleShadow);
+  workspace.registerButtonCallback(
+      'randomizeLabelText', randomizeLabelText);
   workspace.registerButtonCallback(
       'addDynamicOption', Blockly.TestBlocks.addDynamicDropdownOption_);
   workspace.registerButtonCallback(
@@ -242,6 +283,19 @@ function logEvents(state) {
     workspace.addChangeListener(logger);
   } else {
     workspace.removeChangeListener(logger);
+  }
+}
+
+function toggleRenderingDebug(state) {
+  var checkbox = document.getElementById('blockRenderDebugCheck');
+  checkbox.checked = state;
+  if (sessionStorage) {
+    sessionStorage.setItem('blockRenderDebug', Number(state));
+  }
+  if (state) {
+    document.getElementById('blocklyDiv').className = 'renderingDebug';
+  } else {
+    document.getElementById('blocklyDiv').className = '';
   }
 }
 
@@ -338,6 +392,40 @@ h1 {
   font-style: italic;
 }
 
+#blocklyDiv.renderingDebug .blockRenderDebug {
+  display: block;
+}
+
+.blockRenderDebug {
+  display: none;
+}
+
+.rowRenderingRect {
+  stroke: black;
+  fill: none;
+  stroke-width: 1px;
+}
+
+.elemRenderingRect {
+  stroke: red;
+  fill: none;
+  stroke-width: 1px;
+}
+
+.rowSpacerRect {
+  stroke: blue;
+  fill-opacity: 0.5;
+  fill: blue;
+  stroke-width: 1px;
+}
+
+.elemSpacerRect {
+  stroke: pink;
+  fill-opacity: 0.5;
+  fill: pink;
+  stroke-width: 1px;
+}
+
 </style>
 </head>
 <body onload="start()">
@@ -401,6 +489,10 @@ h1 {
     <input type="checkbox" onclick="logEvents(this.checked)" id="logCheck">
   </p>
 
+  <p>
+    Block rendering debug: &nbsp;
+    <input type="checkbox" onclick="toggleRenderingDebug(this.checked)" id="blockRenderDebugCheck">
+  </p>
   <!-- The next three blocks of XML are sample toolboxes for testing basic
   configurations.  For more information on building toolboxes, see https://developers.google.com/blockly/guides/configure/web/toolbox -->
 
@@ -1122,8 +1214,6 @@ h1 {
     <category name="Basic">
       <block type="test_basic_empty"></block>
       <block type="test_basic_empty_with_mutator"></block>
-      <block type="test_basic_stack"></block>
-      <block type="test_basic_row"></block>
       <block type="test_basic_value_to_stack"></block>
       <block type="test_basic_value_to_statement"></block>
       <block type="test_basic_limit_instances"></block>
@@ -1211,6 +1301,11 @@ h1 {
     </category>
     <category name="Fields" expanded="true">
       <category name="Defaults">
+        <button text="set random style" callbackKey="setRandomStyle"></button>
+        <sep gap="8"></sep>
+        <button text="toggle enabled" callbackKey="toggleEnabled"></button>
+        <sep gap="8"></sep>
+        <button text="toggle shadow" callbackKey="toggleShadow"></button>
         <block type="test_fields_angle"></block>
         <block type="test_fields_date"></block>
         <block type="test_fields_checkbox"></block>
@@ -1258,7 +1353,7 @@ h1 {
         <block type="test_images_missing"></block>
         <block type="test_images_many_icons"></block>
       </category>
-      <category name="Emoji! o((*>ᴗ<*))o">
+      <category name="Emoji! o((*^ᴗ^*))o">
         <label text="Unicode & Emojis"></label>
         <block type="test_style_emoji"></block>
         <block type="text">

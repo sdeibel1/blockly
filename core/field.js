@@ -59,6 +59,13 @@ Blockly.Field = function(text, opt_validator) {
 Blockly.Field.TYPE_MAP_ = {};
 
 /**
+ * The default height of the border rect on any field.
+ * @type {number}
+ */
+Blockly.Field.BORDER_RECT_DEFAULT_HEIGHT = 16;
+
+
+/**
  * Registers a field type. May also override an existing field type.
  * Blockly.Field.fromJson uses this registry to find the appropriate field.
  * @param {string} type The field type name as used in the JSON definition.
@@ -228,7 +235,7 @@ Blockly.Field.prototype.init = function() {
         'ry': 4,
         'x': -Blockly.BlockSvg.SEP_SPACE_X / 2,
         'y': 0,
-        'height': 16
+        'height': Blockly.Field.BORDER_RECT_DEFAULT_HEIGHT
       }, this.fieldGroup_);
   /** @type {!Element} */
   this.textElement_ = Blockly.utils.createSvgElement('text',
