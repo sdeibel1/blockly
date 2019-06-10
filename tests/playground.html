@@ -77,6 +77,7 @@
 'use strict';
 goog.require('Blockly.BlockRendering.RenderInfo');
 var workspace = null;
+var cursors = [];
 
 function start() {
   setBackgroundColour();
@@ -154,8 +155,171 @@ function start() {
   }
   taChange();
 
+  workspace.addChangeListener(highlighter);
   fromXml();
 }
+
+/**
+ * Gets the source block of any given node.
+ * @param {Blockly.ASTNode} node The node to get the source block from.
+ * @return {Blockly.Block} The source block of the node or null if the node
+ * is the workspace.
+ * @package
+ */
+function getBlockFromNode(node) {
+  if (node.getType() === Blockly.ASTNode.types.BLOCK
+      || node.getType() === Blockly.ASTNode.types.STACK) {
+    return node.getLocation();
+  } else if (node.getType() !== Blockly.ASTNode.types.WORKSPACE){
+    return node.getLocation().getSourceBlock();
+  } else {
+    return null;
+  }
+}
+
+/**
+ * Decides what nodes to traverse and which ones to skip. Currently, it
+ * skips output, stack and workspace nodes.
+ * @param {Blockly.ASTNode} node The ast node to check whether it is valid.
+ * @return {Boolean} True if the node should be visited, false otherwise.
+ * @package
+ */
+function validNode(node, block) {
+  if (!node) {
+    return false;
+  }
+  var types = Blockly.ASTNode.types;
+  var location = node.getLocation();
+  var nodeBlock = getBlockFromNode(node, block);
+
+  if (!nodeBlock || block === nodeBlock || nodeBlock.isShadow()) {
+    return false;
+  }
+  if (location.type === Blockly.INPUT_VALUE && block.outputConnection) {
+    return true;
+  } else if (location.type === Blockly.NEXT_STATEMENT && block.previousConnection) {
+    return true;
+  } else if (node.getType() === types.PREVIOUS && block.nextConnection) {
+    return true;
+  } else if (node.getType() === types.OUTPUT) {
+    var inputs = block.inputList;
+    for (var i = 0, input; input = inputs[i]; i++) {
+      if (input.type === Blockly.INPUT_VALUE) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * From the given node find either the next valid sibling or parent.
+ * @param {Blockly.ASTNode} node The current position in the ast.
+ * @return {Blockly.ASTNode} The parent ast node or null if there are no
+ * valid parents.
+ * @package
+ */
+function findSiblingOrParent(node, block) {
+  if (!node) {
+    return null;
+  }
+  if (node.next()) {
+    return node.next();
+  }
+  return findSiblingOrParent(node.out(), block);
+}
+
+/**
+ * Uses pre order traversal to go navigate the blockly ast. This will allow
+ * a user to easily navigate the entire blockly AST without having to go in
+ * and out levels on the tree.
+ * @param {Blockly.ASTNode} node The current position in the ast.
+ * @return {Blockly.ASTNode} The next node in the traversal.
+ * @package
+ */
+function treeTraversal(node, block) {
+  if (!node) {
+    return null;
+  }
+  var newNode = node.in() || node.next();
+  if (validNode(newNode, block)) {
+    return newNode;
+  } else if (newNode) {
+    return treeTraversal(newNode, block);
+  } else {
+    newNode = findSiblingOrParent(node, block);
+    var types = Blockly.ASTNode.types;
+    if (validNode(newNode, block)) {
+      return newNode;
+    } else if (newNode && newNode.getType() !== types.WORKSPACE) {
+      return treeTraversal(newNode, block);
+    }
+  }
+  return null;
+}
+
+function getAllNodes() {
+  var ws = Blockly.getMainWorkspace();
+  var defaultCoord = new goog.math.Coordinate(100,100);
+  var curNode = Blockly.ASTNode.createWorkspaceNode(ws, defaultCoord);
+  var nodes = [];
+  do {
+    nodes.push(curNode);
+    curNode = treeTraversal(curNode);
+  } while (curNode);
+  return nodes;
+}
+
+function getAllValidNodesForBlock(block) {
+  var ws = Blockly.getMainWorkspace();
+  var defaultCoord = new goog.math.Coordinate(100,100);
+  var curNode = Blockly.ASTNode.createWorkspaceNode(ws, defaultCoord);
+  var nodes = [];
+  do {
+    nodes.push(curNode);
+    curNode = treeTraversal(curNode, block);
+  } while (curNode);
+  return nodes;
+}
+
+function highlightConnections(block) {
+  var ws = Blockly.getMainWorkspace();
+  var nodes = getAllValidNodesForBlock(block);
+  var cursorList = [];
+  for (var i = 0, node; node = nodes[i]; i++) {
+    if (node.isConnection()) {
+      var nodeConnection = node.getLocation();
+      // TODO: don't use a private function here
+      for (var j = 0, connection; connection = block.getConnections_(false)[j]; j++) {
+        console.log(nodeConnection.isConnectionAllowed(connection));
+        if (connection.isConnectionAllowed(nodeConnection)) {
+          console.log("yes");
+          var cs = new Blockly.CursorSvg(ws);
+          var csdom = cs.createDom();
+          // TODO: don't use private variable
+          ws.svgGroup_.appendChild(csdom);
+          cs.setLocation(node);
+          cursorList.push(csdom);
+          break;
+        }
+      }
+    }
+  }
+  cursors = cursorList;
+  return cursorList;
+}
+
+function removeCursors(cursorList) {
+  for (var i = 0, cursor; cursor = cursorList[i]; i++) {
+    cursor.remove();
+  }
+}
+
+function highlighter() {
+  removeCursors(cursors);
+  if (Blockly.selected) highlightConnections(Blockly.selected);
+}
+
 
 function addToolboxButtonCallbacks() {
   var randomizeLabelText = function(button) {
