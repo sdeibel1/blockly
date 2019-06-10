@@ -156,7 +156,7 @@ Blockly.BlockRendering.Debug.prototype.drawConnection = function(conn) {
   } else if (conn.type == Blockly.OUTPUT_VALUE) {
     size = 2;
     colour = 'magenta';
-    fill = colour;
+    fill = 'none';
   } else if (conn.type == Blockly.NEXT_STATEMENT) {
     size = 4;
     colour = 'goldenrod';
@@ -164,7 +164,7 @@ Blockly.BlockRendering.Debug.prototype.drawConnection = function(conn) {
   } else if (conn.type == Blockly.PREVIOUS_STATEMENT) {
     size = 2;
     colour = 'goldenrod';
-    fill = colour;
+    fill = 'none';
   }
   this.debugElements_.push(Blockly.utils.createSvgElement('circle',
       {
@@ -197,15 +197,15 @@ Blockly.BlockRendering.Debug.prototype.drawRenderedRow = function(row, cursorY, 
       },
       this.svgRoot_));
 };
-
 /**
- * Draw debug rectangles for a non-empty row and all of its subcomponents.
+ * Draw debug rectangles for a non-empty row and all of its subcomponents,
+ * while adding an aria-label to the row containing a description of all
+ * subelements/fields of the row.
  * @param {!Blockly.BlockSvg.Row} row The non-empty row to render.
  * @param {number} cursorY The y position of the top of the row.
- * @param {?string} type The type of the block.
  * @package
  */
-Blockly.BlockRendering.Debug.prototype.drawRowWithElements = function(row, cursorY, type) {
+Blockly.BlockRendering.Debug.prototype.drawRowWithElements = function(row, cursorY) {
   var centerY = cursorY + row.height / 2;
   var cursorX = 0;
   for (var e = 0; e < row.elements.length; e++) {
@@ -217,7 +217,8 @@ Blockly.BlockRendering.Debug.prototype.drawRowWithElements = function(row, curso
     }
     cursorX += elem.width;
   }
-  this.drawRenderedRow(row, cursorY, type);
+  var des = this.grabDesc(row);
+  this.drawRenderedRow(row, cursorY, des);
 };
 
 /**
@@ -240,7 +241,7 @@ Blockly.BlockRendering.Debug.prototype.drawDebug = function(block, info) {
         this.drawSpacerRow(row, cursorY);
       }
     } else {
-      this.drawRowWithElements(row, cursorY, block.type);
+      this.drawRowWithElements(row, cursorY);
     }
     cursorY += row.height;
   }
@@ -254,4 +255,36 @@ Blockly.BlockRendering.Debug.prototype.drawDebug = function(block, info) {
   if (block.outputConnection) {
     this.drawConnection(block.outputConnection);
   }
+};
+
+/**
+ * Construct the descriotion of a row.
+ * @param {!Blockly.BlockRendering.Row} row the row to grab description fromXml
+ * @package
+ */
+
+Blockly.BlockRendering.Debug.prototype.grabDesc = function(row){
+  var desc = '';
+  for(var i = 0; i < row.elements.length; i++){
+    switch (row.elements[i].type) {
+      case 'field':
+        if(row.elements[i].field.textElement_ != null)
+        desc += row.elements[i].field.textElement_.textContent + '. ';
+        break;
+      case 'icon':
+        desc += 'modifier icon. ';
+        break;
+      case 'external value input':
+        desc += row.elements[i].connectedBlock == null? 'external value input. ':row.elements[i].connectedBlock.type + '. ';
+        break;
+      case 'inline input':
+        desc += row.elements[i].connectedBlock == null? 'inline input. ':row.elements[i].connectedBlock.type + '. ';
+        break;
+      case 'statement input':
+        desc += 'statement. ';
+        break;
+      default:
+    }
+  }
+  return desc;
 };
