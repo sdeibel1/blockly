@@ -288,19 +288,20 @@ function highlightConnections(block) {
   var cursorList = [];
   for (var i = 0, node; node = nodes[i]; i++) {
     if (node.isConnection()) {
+      var nodeBlock = node.getLocation().getSourceBlock();
       var nodeConnection = node.getLocation();
-      // TODO: don't use a private function here
-      for (var j = 0, connection; connection = block.getConnections_(false)[j]; j++) {
-        console.log(nodeConnection.isConnectionAllowed(connection));
-        if (connection.isConnectionAllowed(nodeConnection)) {
-          console.log("yes");
-          var cs = new Blockly.CursorSvg(ws);
-          var csdom = cs.createDom();
-          // TODO: don't use private variable
-          ws.svgGroup_.appendChild(csdom);
-          cs.setLocation(node);
-          cursorList.push(csdom);
-          break;
+      if (!(block.getDescendants().includes(nodeBlock))) {
+        // TODO: don't use a private function here
+        for (var j = 0, connection; connection = block.getConnections_(false)[j]; j++) {
+          if (connection.isConnectionAllowed(nodeConnection)) {
+            var cs = new Blockly.CursorSvg(ws);
+            var csdom = cs.createDom();
+            // TODO: don't use private variable
+            ws.svgGroup_.appendChild(csdom);
+            cs.setLocation(node);
+            cursorList.push(csdom);
+            break;
+          }
         }
       }
     }

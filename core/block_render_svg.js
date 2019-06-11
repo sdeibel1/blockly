@@ -185,7 +185,7 @@ Blockly.BlockSvg.JAGGED_TEETH_WIDTH = 15;
  * SVG path for drawing a horizontal puzzle tab from top to bottom.
  * @const
  */
-Blockly.BlockSvg.TAB_PATH_DOWN = 'v 5 c 0,10 -' + Blockly.BlockSvg.TAB_WIDTH +
+Blockly.BlockSvg.TAB_PATH_DOWN = 'c 0,10 -' + Blockly.BlockSvg.TAB_WIDTH +
     ',-8 -' + Blockly.BlockSvg.TAB_WIDTH + ',7.5 s ' +
     Blockly.BlockSvg.TAB_WIDTH + ',-2.5 ' + Blockly.BlockSvg.TAB_WIDTH + ',7.5';
 /**

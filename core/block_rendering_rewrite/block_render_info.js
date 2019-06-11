@@ -116,7 +116,7 @@ Blockly.BlockRendering.RenderInfo.prototype.measure_ = function() {
   this.addRowSpacing_();
   this.finalize_();
 
-  console.log(this);
+  // console.log(this);
 };
 
 /**

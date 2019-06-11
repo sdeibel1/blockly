@@ -360,7 +360,7 @@ Blockly.BlockRendering.Drawer.prototype.moveConnections_ = function() {
     var connectionX = (this.info_.RTL ? -BRC.NOTCH_OFFSET_LEFT : BRC.NOTCH_OFFSET_LEFT);
 
 
-    console.log('previous connection goes to ' + connectionX + ', 0');
+    // console.log('previous connection goes to ' + connectionX + ', 0');
     topRow.connection.setOffsetInBlock(connectionX, 0);
     topRow.connection.moveToOffset(blockTL);
   }
